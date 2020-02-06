@@ -6,9 +6,13 @@ import pipe from "lodash/fp/pipe"
 import map from "lodash/fp/map"
 import uniq from "lodash/uniq"
 import Select from "react-select"
+
 const getUniqueLocations = pipe(map("location"), uniq)
+
 const immdTypes = ["arrival", "departure"]
 const sourceType = ["mainland", "hong_kong", "other", "total"]
+const immdOptions = immdTypes.map(str => ({ value: str, label: str }))
+const sourceTypeOptions = sourceType.map(str => ({ value: str, label: str }))
 
 export class ImmdChart extends React.Component {
   constructor() {
@@ -45,14 +49,19 @@ export class ImmdChart extends React.Component {
       columns: [["dates", ...dates], ...columnsByLocation],
       groups: [locations],
     }
+
     return (
       <>
         <Select
-          options={immdTypes.map(str => ({ value: str, label: str }))}
+          options={immdOptions}
+          value={immdOptions.find(i => i.value === this.state.immdType)}
           onChange={({ value: immdType }) => this.setState({ immdType })}
         />
         <Select
-          options={sourceType.map(str => ({ value: str, label: str }))}
+          options={sourceTypeOptions}
+          value={sourceTypeOptions.find(
+            i => i.value === this.state.sourceType
+          )}
           onChange={({ value: sourceType }) => this.setState({ sourceType })}
         />
         <Chart
@@ -66,7 +75,7 @@ export class ImmdChart extends React.Component {
             },
             y: {
               tick: {
-                text: {show:false}
+                text: { show: false },
               },
             },
           }}
