@@ -1,6 +1,6 @@
 import React from "react"
-import c3 from "c3"
-import "c3/c3.css"
+import c3 from "billboard.js"
+import "billboard.js/dist/billboard.min.css"
 import "./Chart.css"
 class Chart extends React.Component {
   shouldComponentUpdate(nextProps, nextState, nextContext) {

@@ -16,6 +16,7 @@ import { BasicCard } from "@components/atoms/Card"
 import { WarsCaseCard } from "@components/organisms/CaseCard"
 import AlertMessage from "@components/organisms/AlertMessage"
 import { Paragraph } from "@components/atoms/Text"
+import { ImmdChart } from "@components/charts/ImmdChart"
 
 import { formatNumber } from "@/utils"
 
@@ -232,7 +233,6 @@ export default function IndexPage({ data }) {
                 {t("dashboard.source_immd")}
               </Link>
             </Typography>
-
             <Typography variant="body2" color="textPrimary">
               {`${t("dashboard.immd_remark", {
                 to: data.allImmdAirport.edges[0].node.date,
@@ -240,6 +240,7 @@ export default function IndexPage({ data }) {
               })}`}
             </Typography>
             <BasicCard>
+              <ImmdChart data={data.immdChart.nodes} />
               <PassengerStats
                 t={t}
                 bridge={data.allImmdHongKongZhuhaiMacaoBridge.edges}
@@ -378,6 +379,21 @@ export const WarsCaseQuery = graphql`
           detail_en
           source_url
         }
+      }
+    }
+    immdChart: allImmdchart {
+      totalCount
+      nodes {
+        location
+        departure_total
+        departure_other
+        departure_mainland
+        departure_hong_kong
+        date
+        arrival_total
+        arrival_other
+        arrival_mainland
+        arrival_hong_kong
       }
     }
   }
