@@ -259,7 +259,7 @@ class HighRiskMap extends Component {
   }
   async updateLocationMarkers(filteredLocations) {
     await this.textureReady
-    const dataPoints = filteredLocations.filter(i => i.lat && i.lng)
+    const dataPoints = filteredLocations.filter(i => +i.lat && +i.lng)
     // this.markerClusterGroup.clearLayers()
     const markers = dataPoints.map(this.dataPointToMarker)
     this.markersById = keyBy(markers, "options.id")

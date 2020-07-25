@@ -61,7 +61,6 @@ const CaseCard = styled.div`
   }
 
   .content {
-    max-height: 70vh;
     overflow-y: auto;
     background: #ffffff;
     border-radius: 0 0 12px 12px;
@@ -187,42 +186,22 @@ const WarsCaseTrack = ({ i18n, t, track }) => {
 }
 
 const renderTextWithCaseLink = (i18n, node, text = "detail") => {
-  let rawText = withLanguage(i18n, node, text, true)
-
-  let regexp = /#\d+/g
-  let relatedCases = []
-  let m
-  do {
-    m = regexp.exec(rawText)
-    if (m) {
-      relatedCases.push(m)
-    }
-  } while (m)
-  let splitedRawText = rawText.split(regexp)
-
-  return (
-    <>
-      {splitedRawText.map((str, i) => {
-        let caseNo = relatedCases[i] && relatedCases[i][0]
-
-        return (
-          <>
-            {str}
-            {caseNo && (
-              <Link
-                to={getLocalizedPath(
-                  i18n,
-                  `/cases/${caseNo.slice(1, caseNo.length)}`
-                )}
-              >
-                {caseNo}
-              </Link>
-            )}
-          </>
-        )
-      })}
-    </>
-  )
+  const rawText = withLanguage(i18n, node, text, true)
+  const relatedCases = rawText.match(/#\d+/g)
+  if (!relatedCases) return rawText
+  return rawText.split(/#\d+/g).map((str, i) => {
+    const caseNo = relatedCases[i]
+    return (
+      <React.Fragment key={i}>
+        {str}
+        {caseNo && (
+          <Link to={getLocalizedPath(i18n, `/cases/${caseNo.slice(1)}`)}>
+            {caseNo}
+          </Link>
+        )}
+      </React.Fragment>
+    )
+  })
 }
 
 export const WarsCaseCard = React.forwardRef((props, ref) => {

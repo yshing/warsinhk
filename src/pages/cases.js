@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import _get from "lodash.get"
@@ -15,7 +15,6 @@ import { mapColorForStatus } from "@/utils/colorHelper"
 import { PageContent } from "@/components/atoms/Container"
 import { WarsCaseBoxContainer } from "@/components/organisms/CaseBoxContainer"
 import { WarsCaseCard } from "@components/organisms/CaseCard"
-import InfiniteScroll from "@/components/molecules/InfiniteScroll"
 import ConfirmedCasesSummary from "@/components/molecules/ConfirmedCasesSummary"
 import { ResponsiveWrapper } from "@components/atoms/ResponsiveWrapper"
 import ContextStore from "@/contextStore"
@@ -32,6 +31,8 @@ import BoxViewIcon from "@/components/icons/box_view.svg"
 import CardViewIcon from "@/components/icons/card_view.svg"
 import SortIcon from "@/components/icons/sort.svg"
 import moment from "moment"
+import { Masonry } from "masonic"
+import groupBy from "lodash.groupby"
 
 const TitleContainer = styled.div`
   display: flex;
@@ -134,20 +135,31 @@ const CasesPage = props => {
   } = React.useContext(ContextStore)
 
   // Do the sorting here since case_no is string instead of int
-  const cases = data.allWarsCase.edges
-    .map(i => ({
-      node: { ...i.node, case_no_num: +i.node.case_no, age_num: +i.node.age },
-    }))
-    .sort((edge1, edge2) => {
-      const res = edge2.node.confirmation_date.localeCompare(
-        edge1.node.confirmation_date
-      )
-      if (res === 0) {
-        return parseInt(edge2.node.case_no) - parseInt(edge1.node.case_no)
-      }
-      return res
-    })
-
+  const cases = useMemo(
+    () =>
+      data.allWarsCase.edges
+        .map(i => ({
+          node: {
+            ...i.node,
+            case_no_num: +i.node.case_no,
+            age_num: +i.node.age,
+          },
+        }))
+        .sort((edge1, edge2) => {
+          const res = edge2.node.confirmation_date.localeCompare(
+            edge1.node.confirmation_date
+          )
+          if (res === 0) {
+            return parseInt(edge2.node.case_no) - parseInt(edge1.node.case_no)
+          }
+          return res
+        }),
+    [data]
+  )
+  const groupedPatientTrack = useMemo(
+    () => groupBy(data.patient_track.group, "fieldValue"),
+    [data]
+  )
   const groupArray = []
   data.allWarsCaseRelation.edges.forEach(({ node }, id) => {
     node.id = id + 1
@@ -180,6 +192,7 @@ const CasesPage = props => {
 
   const [filteredCases, setFilteredCases] = useState(cases)
   const [selectedCase, setSelectedCase] = useState(null)
+  const [filter, setFilter] = useState({})
   // 1: by date   : from latest to oldest
   // 2: by date   : from oldest to latest
   // 3: by area   : from greatest to least
@@ -249,7 +262,9 @@ const CasesPage = props => {
       label: t("cases.filters_previous_n_days", { n: 14 }),
       value: `${moment()
         .subtract(27, "day")
-        .format("YYYY-MM-DD")}..${moment().subtract(14, "day").format(`YYYY-MM-DD`)}`,
+        .format("YYYY-MM-DD")}..${moment()
+        .subtract(14, "day")
+        .format(`YYYY-MM-DD`)}`,
     },
     {
       label: t("cases.filters_this_month"),
@@ -360,7 +375,7 @@ const CasesPage = props => {
     preloadedCases = 15
   }
 
-  const renderCaseCard = node => (
+  const renderCaseCard = ({ data: node }) => (
     <WarsCaseCard
       node={node}
       i18n={i18n}
@@ -368,9 +383,7 @@ const CasesPage = props => {
       key={node.case_no}
       // isSelected={selectedCase === item.node.case_no}
       // ref={selectedCase === item.node.case_no ? selectedCard : null}
-      patientTrack={data.patient_track.group.filter(
-        t => t.fieldValue === node.case_no
-      )}
+      patientTrack={groupedPatientTrack[node.case_no]}
       handleClose={
         view === CASES_BOX_VIEW ? e => setSelectedCase(null) : undefined
       }
@@ -562,6 +575,7 @@ const CasesPage = props => {
           options={options}
           searchKey="case"
           onListFiltered={setFilteredCases}
+          onFilterChange={setFilter}
           filterWithOr={false}
         />
         {view === CASES_BOX_VIEW && (
@@ -607,11 +621,20 @@ const CasesPage = props => {
         </>
       ) : (
         <ResponsiveWrapper>
-          <InfiniteScroll
+          <Masonry
+            key={JSON.stringify(filter)}
+            columnWidth={320}
+            columnGutter={20}
+            items={filteredCases.map(i => i.node)}
+            overscanBy={2}
+            render={renderCaseCard}
+            style={{ outline: "none" }}
+          ></Masonry>
+          {/* <InfiniteScroll
             list={filteredCases.map(c => c.node)}
             step={{ mobile: 5, preload: preloadedCases }}
             onItem={renderCaseCard}
-          />
+          /> */}
         </ResponsiveWrapper>
       )}
     </Layout>
@@ -677,6 +700,8 @@ export const CasesPageQuery = graphql`
             remarks_en
             source_url_1
             source_url_2
+            lat
+            lng
           }
         }
       }

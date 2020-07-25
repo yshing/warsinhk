@@ -163,6 +163,7 @@ const TagStyledFilter = props => {
     const result = loopbackFilters(list, {
       where,
     })
+    props.onFilterChange && props.onFilterChange(newFilters)
     setFilters(newFilters)
     setFilteredList(result)
     onListFiltered(result)
