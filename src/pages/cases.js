@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import _get from "lodash.get"
@@ -134,42 +134,46 @@ const CasesPage = props => {
     },
   } = React.useContext(ContextStore)
   const { i18n, t } = useTranslation()
-  const groupArray = data.allWarsCaseRelation.edges.flatMap(({ node }, index) =>
-    node.case_no.split`,`.map(nodeCase => ({
-      ...node,
-      id: index + 1,
-      related_cases: node.case_no,
-      case_no: +nodeCase,
-    }))
-  )
-  const groupArrayByCaseNo = _groupBy(groupArray, "case_no")
-  const groupArrayColumnOptions = data.allWarsCaseRelation.edges.map(
-    ({ node }, index) => ({
-      value: index + 1,
-      label: node[`name_${i18n.language}`],
-    })
-  )
 
   // Do the sorting here since case_no is string instead of int
-  const cases = data.allWarsCase.edges
-    .map(i => ({
-      node: {
-        ...i.node,
-        case_no_num: +i.node.case_no,
-        age_num: +i.node.age,
-        groups: groupArrayByCaseNo[i.node.case_no] || [],
-        group_ids: (groupArrayByCaseNo[i.node.case_no] || []).map(i => i.id),
-      },
-    }))
-    .sort((edge1, edge2) => {
-      const res = edge2.node.confirmation_date.localeCompare(
-        edge1.node.confirmation_date
-      )
-      if (res === 0) {
-        return parseInt(edge2.node.case_no) - parseInt(edge1.node.case_no)
-      }
-      return res
-    })
+  const [cases, groupArrayColumnOptions] = useMemo(() => {
+    const groupArray = data.allWarsCaseRelation.edges.flatMap(
+      ({ node }, index) =>
+        node.case_no.split`,`.map(nodeCase => ({
+          ...node,
+          id: index + 1,
+          related_cases: node.case_no,
+          case_no: +nodeCase,
+        }))
+    )
+    const groupArrayByCaseNo = _groupBy(groupArray, "case_no")
+    const groupArrayColumnOptions = data.allWarsCaseRelation.edges.map(
+      ({ node }, index) => ({
+        value: index + 1,
+        label: node[`name_${i18n.language}`],
+      })
+    )
+    const cases = data.allWarsCase.edges
+      .map(i => ({
+        node: {
+          ...i.node,
+          case_no_num: +i.node.case_no,
+          age_num: +i.node.age,
+          groups: groupArrayByCaseNo[i.node.case_no] || [],
+          group_ids: (groupArrayByCaseNo[i.node.case_no] || []).map(i => i.id),
+        },
+      }))
+      .sort((edge1, edge2) => {
+        const res = edge2.node.confirmation_date.localeCompare(
+          edge1.node.confirmation_date
+        )
+        if (res === 0) {
+          return parseInt(edge2.node.case_no) - parseInt(edge1.node.case_no)
+        }
+        return res
+      })
+    return [cases, groupArrayColumnOptions]
+  }, [data, i18n.language])
 
   const [filteredCases, setFilteredCases] = useState(cases)
   const [selectedCase, setSelectedCase] = useState(null)
