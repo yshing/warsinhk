@@ -13252,6 +13252,11 @@ mute-stream@0.0.8, mute-stream@~0.0.4:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
+my-loopback-filter@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/my-loopback-filter/-/my-loopback-filter-3.0.0.tgz#3bb10e2a89fe508e923bb0c3f093e52b7e81f20c"
+  integrity sha512-PFgLeQpJU4oh61hYNw9dnVX3seKQqGdF7AP91aSKpp+nodOI+1mDWqhPQ1NFY48QshyG/SakAyhTqu40ws8t3g==
+
 name-all-modules-plugin@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/name-all-modules-plugin/-/name-all-modules-plugin-1.0.1.tgz#0abfb6ad835718b9fb4def0674e06657a954375c"
